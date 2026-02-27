@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=82.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emergex"
+version = "0.0.1"
+
+authors = [
+    {name = "Colin Yancey",      email = "colinyancey@gmail.com"},
+    {name = "Cameron Kolisko",   email = "cameronkolisko9@gmail.com"}
+]
+
+description = "A package to describe and optimize for emergent behavior using chemical reaction networks (CRNs). Capable of incorporating empirical data for more precise CRN models."
+readme = "README.md"
+requires-python = ">=3.11"
+
+classifiers = [
+    "Development Status :: 1 - Planning", # 2 - Pre-Alpha, 3 - Alpha, once full repo is uploaded depending on progress
+
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Chemists",
+    "Intended Audience :: Educators",
+    "Intended Audience :: Developers",
+
+    "License :: OSI Approved :: BSD License",
+
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Optimization",
+    "Topic :: Scientific/Engineering :: Simulation",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Chemical Engineering",
+
+    "Operating System :: OS Independent"
+]
+keywords = [
+    "Chemical Modeling",
+    "Mass Action Kinetics",
+    "Chemical Reactions",
+    "Emergent Behavior",
+    "Emergent Function",
+    "Optimization",
+    "Simulation",
+    "Systems Biology",
+    "Chemistry",
+    "Bioinformatics",
+    "Research Tools",
+    "Scientific Computing",
+    "Python",
+    "Data Science",
+    "Chemical Networks",
+    "Biochemical Modeling",
+    "Educational Tools",
+    "Concentration Dynamics",
+    "Rate Laws"
+]
+
+dependencies = [
+
+]
+
+license = "BSD-3-Clause"
+
+[project.urls]
+homepage = "https://github.com/Yancey-Colin/EmergeX"
+repository = "https://github.com/Yancey-Colin/EmergeX"
