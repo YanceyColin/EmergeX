@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+
+message: "If you use this software, please cite it using the metadata below."
+
+title: "EmergeX"
+version: "1.0.0"
+date-released: 2026-03-23
+
+license: "BSD-3-Clause"
+
+repository-code: "https://github.com/Yancey-Colin/EmergeX"
+url: "https://github.com/Yancey-Colin/EmergeX"
+
+abstract: >
+  A Python package to describe and optimize emergent behavior using
+  chemical reaction networks (CRNs), including empirical-data-informed models.
+
+keywords:
+  - chemical reaction networks
+  - emergent behavior
+  - optimization
+  - simulation
+  - systems biology
+  - scientific computing
+
+authors:
+  - family-names: "Yancey"
+    given-names: "Colin"
+    email: "colinyancey@gmail.com"
+  - family-names: "Kolisko"
+    given-names: "Cameron"
+    email: "cameronkolisko9@gmail.com"
+  - family-names: "Schulman"
+    given-names: "Rebecca"
+    email: "schulman.rk@gmail.com"
