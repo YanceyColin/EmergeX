@@ -77,7 +77,7 @@ enforcementWindow = 20*60
 displaceTime = 7200
 
 
-# Quick pre-optimization preview (blocks at show so results can be inspected).
+# Pre-optimization preview
 rN.simulateReactionFn(simTime, simDataResolution = 1001)
 defaultResult = rN.SimResults[-1]
 
@@ -171,39 +171,39 @@ saveBehaviorLandscapeVisualization(
     timeUnits = "min"
 )
 
-# simulationRunnerObj = CRNSimulationRunner(rtol = 1e-6, atol = 1e-9)
-# optimizerFramework = CRNOptimizationFramework(
-#     freeParams,
-#     linkedParameters = linkedParams
-# )
+simulationRunnerObj = CRNSimulationRunner(rtol = 1e-6, atol = 1e-9)
+optimizerFramework = CRNOptimizationFramework(
+    freeParams,
+    linkedParameters = linkedParams
+)
 
-# dataResult = CompiledOptimizationData(
-#     behaveManager,
-#     simulationRunnerObj,
-#     optimizerFramework,
-#     iterationCount = 500,
-#     callbackFrequency = 10
-# )
-# print(dataResult.OptimizerRunResultObject)
-# dataResult.save(DATA_STORE, "oscillateResult")
+dataResult = CompiledOptimizationData(
+    behaveManager,
+    simulationRunnerObj,
+    optimizerFramework,
+    iterationCount = 500,
+    callbackFrequency = 10
+)
+print(dataResult.OptimizerRunResultObject)
+dataResult.save(DATA_STORE, "oscillateResult")
 
 
-# iterSample = jnp.arange(1, dataResult.OptimizerRunResultObject.LastIteration + 1, dataResult.OptimizerRunResultObject.LastIteration // 61) # I want to see at least 60 plots
+iterSample = jnp.arange(1, dataResult.OptimizerRunResultObject.LastIteration + 1, dataResult.OptimizerRunResultObject.LastIteration // 61) # I want to see at least 60 plots
 
-# saveFreeParametersVisualization(
-#     dataResult,
-#     iterationList = iterSample,
-#     fileLocation = DATA_STORE,
-#     fileName = "oscillateParameters",
-#     fps = 10
-# )
+saveFreeParametersVisualization(
+    dataResult,
+    iterationList = iterSample,
+    fileLocation = DATA_STORE,
+    fileName = "oscillateParameters",
+    fps = 6
+)
 
-# saveBehaviorResultsVisualization(
-#     dataResult,
-#     iterationList = iterSample,
-#     fileLocation = DATA_STORE,
-#     fileName = "oscillateBehaviors",
-#     fps = 10,
-#     timeUnits = "min"
-# )
+saveBehaviorResultsVisualization(
+    dataResult,
+    iterationList = iterSample,
+    fileLocation = DATA_STORE,
+    fileName = "oscillateBehaviors",
+    fps = 6,
+    timeUnits = "min"
+)
 

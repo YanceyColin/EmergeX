@@ -2,7 +2,7 @@
 #                                             #
 #               By: Colin Yancey              #
 #             Created January 2026            #
-#            Last Edited: 02/24/2026          #
+#            Last Edited: 06/10/2026          #
 #                  Schulman Lab               #
 #            Johns Hopkins University         #
 #                                             #
@@ -31,6 +31,8 @@ def saveFreeParametersVisualization(
     fileName: str = 'freeParameters',
     fps: int = 10,
     keepIndividualImages: bool = False,
+    showLossXAxis: bool = False,
+    videoBackgroundColor: tuple[int, int, int] = (255, 255, 255),
     lossLineAccentColor: NDArray = np.array([0.122, 0.467, 0.706]), # Coloring the prior iterations in the loss line plot
     baseColor: NDArray = np.array([0.75, 0.75, 0.75]), # Baseline bar color (default is neutral gray)
     posTargetColor: NDArray = np.array([0.5, 0.95, 0.5]), # Bar color when parameter is increasing rapidly (default is green)
@@ -65,11 +67,13 @@ def saveFreeParametersVisualization(
         params = paramHist[iteration]
 
         fig, (ax_loss, ax) = plt.subplots(
-            2, 1, figsize=(12, 8),
+            2, 1, figsize=(8, 8),
             gridspec_kw={'height_ratios': [1, 4]}
         )
+        fig.patch.set_alpha(0.0)
 
         for a in (ax_loss, ax):
+            a.set_facecolor('none')
             a.spines['top'].set_visible(False)
             a.spines['right'].set_visible(False)
             a.grid(True, which='major', axis='y', linestyle='--', color='0.85', alpha=0.5)
@@ -78,11 +82,10 @@ def saveFreeParametersVisualization(
 
         ax_loss.plot(xLoss[:iteration + 1], lossHist[:iteration + 1], color=lossLineAccentColor, linewidth=2.0) # Prior loss
         ax_loss.plot(xLoss[iteration:], lossHist[iteration:], color='0.6', linestyle='--', linewidth=1.5) # Future loss
-        #ax_loss.fill_between(xLoss[:iteration + 1], lossHist[:iteration + 1], color=accentColor, alpha=0.08, step=None)
         ax_loss.plot(xLoss[iteration], lossHist[iteration], marker='o', markersize=5, markerfacecolor='white', markeredgecolor=lossLineAccentColor, markeredgewidth=1.5, zorder=5) # Add marker for current iteration
 
-        ax_loss.set_ylabel('Loss', fontsize=11)
-        ax_loss.set_xticks([])
+        ax_loss.set_ylabel('Loss', fontsize=24)
+        ax_loss.tick_params(axis='y', labelsize=21)
 
         # Top: Loss history plot (log space)
         ax_loss.set_ylim(minLoss / multiplierLoss, maxLoss * multiplierLoss)
@@ -90,10 +93,22 @@ def saveFreeParametersVisualization(
         ax_loss.set_axisbelow(True)
         ax_loss.set_xlim(0, totalIter - 1)
 
-        ax_loss.set_ylabel('Loss')
-        ax_loss.set_xticks([])  # keep top plot clean
+        ax_loss.set_ylabel('Loss', fontsize=24)
+        if showLossXAxis:
+            ax_loss.set_xlabel('Iteration', fontsize=24)
+            ax_loss.tick_params(axis='x', labelsize=21)
+        else:
+            ax_loss.set_xticks([])  # keep top plot clean
 
-        bars = ax.bar(np.arange(len(params)), params, tick_label = paramNames, color = baseColor, edgecolor = '0.25', linewidth = 1.5)
+        bars = ax.bar(
+            np.arange(len(params)),
+            params,
+            width = 0.58,
+            tick_label = paramNames,
+            color = baseColor,
+            edgecolor = '0.25',
+            linewidth = 1.5
+        )
         for i, bar in enumerate(bars):
             x = bar.get_x()
             w = bar.get_width()
@@ -109,10 +124,10 @@ def saveFreeParametersVisualization(
                     finalColor = baseColor + (negTargetColor - baseColor) * -max(pc, -0.2) / 0.2 # map [-0.2, 0] -> [1, 0]
                 bar.set_facecolor(tuple(float(x) for x in finalColor))
 
-        ax.set_xlabel('Free Parameters', fontsize=11)
-        ax.set_ylabel('Parameter Value', fontsize=11)
-        ax.tick_params(axis='y', labelsize=10)
-        ax.set_xticklabels(paramNames, rotation=30, ha='right', fontsize=9)
+        ax.set_xlabel('Free Parameters', fontsize=24)
+        ax.set_ylabel('Parameter Value', fontsize=24)
+        ax.tick_params(axis='y', labelsize=21)
+        ax.set_xticklabels(paramNames, rotation=30, ha='right', fontsize=21)
 
         ax.set_ylim(minValue / multiplier, maxValue * multiplier)
         ax.set_yscale('log')
@@ -124,14 +139,14 @@ def saveFreeParametersVisualization(
 
         fig.tight_layout()
         framePath = workspaceName / f"{fileName}_{iteration}.png"
-        plt.savefig(framePath, dpi=100)
+        plt.savefig(framePath, dpi=100, transparent=True)
         plt.close(fig)
         framePaths.append(framePath)
 
     with iio.get_writer(workspaceName / f"{fileName}.mp4", fps = fps, codec = 'libx264', format = 'FFMPEG', ffmpeg_params = ['-pix_fmt', 'yuv420p']) as writer:
         for framePath in framePaths:
             image = iio.imread(framePath)
-            writer.append_data(image)
+            writer.append_data(flattenTransparentImage(image, videoBackgroundColor))
 
     if not keepIndividualImages:
         for framePath in framePaths:

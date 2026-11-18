@@ -2,7 +2,7 @@
 #                                             #
 #               By: Colin Yancey              #
 #             Created January 2026            #
-#            Last Edited: 02/24/2026          #
+#            Last Edited: 06/10/2026          #
 #                  Schulman Lab               #
 #            Johns Hopkins University         #
 #                                             #
@@ -41,8 +41,10 @@ def saveBehaviorResultsVisualization(
     fps: int = 1,
     stackImages: bool = False,
     keepIndividualImages: bool = False,
+    videoBackgroundColor: tuple[int, int, int] = (255, 255, 255),
     startLineColor = "#202020",
     endLineColor = "#30E0F0",
+    sizePerGridLength = 4,
     timeUnits = "sec",
     dataResolution: int = 1001
 ):
@@ -151,11 +153,12 @@ def saveBehaviorResultsVisualization(
     
     panelNum = len(timeCourseBehaviorGroupWhitelist)
     squareGridDim = int(np.ceil(np.sqrt(panelNum))) # Square grid of the panel count
-    gridLen = 4*squareGridDim
+    gridLen = sizePerGridLength*squareGridDim
     lowMax = compiledOptDataObject.ManagerObject.getLowMax()
     highMin = compiledOptDataObject.ManagerObject.getHighMin()
 
     fig, axes = plt.subplots(squareGridDim, squareGridDim, figsize=(gridLen, gridLen))
+    fig.patch.set_alpha(0.0)
     if squareGridDim == 1: # Fix annoying auto-axis size leading to dimension reduction
         axes = np.array([[axes]])
     flatAxes = axes.ravel()
@@ -179,6 +182,7 @@ def saveBehaviorResultsVisualization(
         x = evalPts[tCIdx]/UNIT_WEIGHTS[timeUnits]
 
         ax = flatAxes[k]
+        ax.set_facecolor('none')
         missingLowLabel = True
         missingHighLabel = True
 
@@ -205,10 +209,14 @@ def saveBehaviorResultsVisualization(
         ax.spines['right'].set_visible(False)
         ax.grid(True, linestyle='--', alpha = 0.3)
         ax.set_xlim(x[0], x[-1])
+        ax.tick_params(axis='both', labelsize=14)
         rowIndex = k // squareGridDim
         columnIndex = k % squareGridDim
+        behaviorGroup = timeCourseObj.BehaviorGroups[panelInfo[1] - 1]
         if rowIndex == lowestVisibleRowByColumn.get(columnIndex):
-            ax.set_xlabel(f"Time ({timeUnits})")
+            ax.set_xlabel(f"Time ({timeUnits})", fontsize=16)
+
+        ax.set_ylabel(f"f([{behaviorGroup.ComponentNames[0]}])", fontsize=16)
 
         ax.set_ylim(-0.03, 1.03)
 
@@ -241,13 +249,13 @@ def saveBehaviorResultsVisualization(
             curPlots.append(
                 ax.plot(x, y, color = curPlotColor, linewidth = 1.8)
             )
-            ax.set_title(fr"Time Course {tCIdx + 1}, $\mathbf{{f}}\left(\text{{[{behaviorGroup.ComponentNames[0]}]}}\right)$", fontsize=9)
+            ax.set_title(fr"Time Course {tCIdx + 1}, $\mathbf{{f}}\left(\text{{[{behaviorGroup.ComponentNames[0]}]}}\right)$", fontsize=15)
 
         iterTracker = addIterationTracker(fig, iteration + 1, optRes.LastIteration)
 
-        fig.tight_layout(rect = [0, 0, 1, 0.98])
+        fig.tight_layout(rect = [0, 0, 1, 0.94])
         framePath = workspaceName / f"{fileName}_{iteration}.png"
-        plt.savefig(framePath, dpi=100)
+        plt.savefig(framePath, dpi=100, transparent=True)
         framePaths.append(framePath)
         
         iterTracker.remove()
@@ -259,7 +267,7 @@ def saveBehaviorResultsVisualization(
     with iio.get_writer(workspaceName / f"{fileName}.mp4", fps = fps, codec = 'libx264', format = 'FFMPEG', ffmpeg_params = ['-pix_fmt', 'yuv420p']) as writer:
         for framePath in framePaths:
             image = iio.imread(framePath)
-            writer.append_data(image)
+            writer.append_data(flattenTransparentImage(image, videoBackgroundColor))
 
     if not keepIndividualImages:
         for framePath in framePaths:
@@ -321,6 +329,7 @@ def saveBehaviorLandscapeVisualization(
     highMin = optBehaviorManagerObject.getHighMin()
 
     fig, axes = plt.subplots(squareGridDim, squareGridDim, figsize=(gridLen, gridLen))
+    fig.patch.set_alpha(0.0)
     if squareGridDim == 1:
         axes = np.array([[axes]])
     flatAxes = axes.ravel()
@@ -346,6 +355,7 @@ def saveBehaviorLandscapeVisualization(
 
         totalTime = sum([timeSpan.Time for timeSpan in timeCourseObj.TimeCourse]) / UNIT_WEIGHTS[timeUnits]
         ax = flatAxes[panelIdx]
+        ax.set_facecolor('none')
 
         missingLowLabel = True
         missingHighLabel = True
@@ -373,19 +383,21 @@ def saveBehaviorLandscapeVisualization(
         ax.grid(True, linestyle='--', alpha=0.3)
         ax.set_xlim(0, totalTime)
         ax.set_ylim(-0.03, 1.03)
+        ax.tick_params(axis='both', labelsize=14)
 
         rowIndex = panelIdx // squareGridDim
         columnIndex = panelIdx % squareGridDim
         if rowIndex == lowestVisibleRowByColumn.get(columnIndex):
-            ax.set_xlabel(f"Time ({timeUnits})")
+            ax.set_xlabel(f"Time ({timeUnits})", fontsize=16)
+
+        ax.set_ylabel(f"f([{behaviorGroupObj.ComponentNames[0]}])", fontsize=16)
 
         ax.set_title(
             fr"Time Course {timeCourseIdx + 1}, $\mathbf{{f}}\left(\text{{[{behaviorGroupObj.ComponentNames[0]}]}}\right)$",
-            fontsize=9
+            fontsize=15
         )
 
-    fig.tight_layout(rect=[0, 0, 1, 0.98])
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(fileLocation, exist_ok=True)
-    plt.savefig(fileLocation / f"{fileName}.png", dpi=100)
+    plt.savefig(fileLocation / f"{fileName}.png", dpi=100, transparent=True)
     plt.close(fig)
-

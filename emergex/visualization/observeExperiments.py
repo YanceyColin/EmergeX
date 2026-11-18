@@ -2,7 +2,7 @@
 #                                             #
 #               By: Colin Yancey              #
 #             Created March 2026              #
-#            Last Edited: 03/04/2026          #
+#            Last Edited: 06/10/2026          #
 #                  Schulman Lab               #
 #            Johns Hopkins University         #
 #                                             #
@@ -39,6 +39,7 @@ def saveExperimentResultsVisualization(
     fps: int = 1,
     stackImages: bool = False,
     keepIndividualImages: bool = False,
+    videoBackgroundColor: tuple[int, int, int] = (255, 255, 255),
     startLineColor: str = "#202020",
     endLineColor: str = "#30E0F0",
     dataPointColor: str = "#A0A0A0",
@@ -232,6 +233,7 @@ def saveExperimentResultsVisualization(
     gridLen = 4 * squareGridDim
 
     fig, axes = plt.subplots(squareGridDim, squareGridDim, figsize=(gridLen, gridLen))
+    fig.patch.set_alpha(0.0)
     if squareGridDim == 1:
         axes = np.array([[axes]])
     flatAxes = axes.ravel()
@@ -256,6 +258,7 @@ def saveExperimentResultsVisualization(
         signalObj = exptObj.Signals[signalIdx]
 
         ax = flatAxes[panelIdx]
+        ax.set_facecolor('none')
         x = evalPts[(groupIdx, exptIdx)]
 
         ax.scatter(
@@ -273,14 +276,15 @@ def saveExperimentResultsVisualization(
         ax.grid(True, linestyle='--', alpha=0.3)
         ax.set_xlim(x[0], x[-1])
         ax.set_ylim(-0.03, 1.03)
+        ax.tick_params(axis='both', labelsize=14)
         rowIndex = panelIdx // squareGridDim
         columnIndex = panelIdx % squareGridDim
-        if rowIndex == lowestVisibleRowByColumn.get(columnIndex):
-            ax.set_xlabel(f"Time ({timeUnits})")
-        ax.set_ylabel("Normalized Signal")
-
         signalName = ":".join(signalObj.ComponentNames)
-        ax.set_title(f"Group {groupIdx + 1}, Experiment {exptIdx + 1}, Signal {signalIdx + 1} [{signalName}]", fontsize=9)
+        if rowIndex == lowestVisibleRowByColumn.get(columnIndex):
+            ax.set_xlabel(f"Time ({timeUnits})", fontsize=16)
+        ax.set_ylabel(f"f([{signalName}])", fontsize=16)
+
+        ax.set_title(f"Group {groupIdx + 1}, Experiment {exptIdx + 1}, Signal {signalIdx + 1} [{signalName}]", fontsize=15)
 
     startRGB = np.array(mcolors.hex2color(startLineColor))
     endRGB = np.array(mcolors.hex2color(endLineColor))
@@ -299,9 +303,9 @@ def saveExperimentResultsVisualization(
 
         iterTracker = addIterationTracker(fig, iteration + 1, optRes.LastIteration)
 
-        fig.tight_layout(rect=[0, 0, 1, 0.98])
+        fig.tight_layout(rect=[0, 0, 1, 0.94])
         framePath = workspaceName / f"{fileName}_{iteration + 1}.png"
-        plt.savefig(framePath, dpi=100)
+        plt.savefig(framePath, dpi=100, transparent=True)
         framePaths.append(framePath)
 
         iterTracker.remove()
@@ -318,7 +322,7 @@ def saveExperimentResultsVisualization(
     ) as writer:
         for framePath in framePaths:
             image = iio.imread(framePath)
-            writer.append_data(image)
+            writer.append_data(flattenTransparentImage(image, videoBackgroundColor))
 
     if not keepIndividualImages:
         for framePath in framePaths:
